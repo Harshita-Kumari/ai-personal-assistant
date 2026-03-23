@@ -3,101 +3,257 @@
 <head>
     <title>AI Assistant</title>
 
+    <!-- ✅ Markdown Support -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Syntax Highlighting -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         body {
             margin: 0;
-            font-family: Arial;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1f2f, #343541);
+            color: white;
+        }
+
+        .app {
             display: flex;
+            height: 100vh;
         }
 
         /* Sidebar */
         #sidebar {
-            width: 25%;
+            width: 260px;
             background: #202123;
-            color: white;
-            height: 100vh;
-            padding: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar h3 {
+            margin-bottom: 15px;
         }
 
         #sidebar a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            margin: 10px 0;
-        }
-
-        /* Chat area */
-        #chat-area {
-            width: 75%;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-
-        #chat-box {
-            height: 80vh;
-            overflow-y: scroll;
-            background: white;
             padding: 10px;
-            border-radius: 10px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            transition: 0.3s;
         }
 
+        #sidebar a:hover {
+            background: #343541;
+        }
+
+        /* Main */
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        #header {
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* Chat Box */
+        #chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Messages */
         .user {
             text-align: right;
-            color: blue;
             margin: 10px;
         }
 
         .assistant {
             text-align: left;
-            color: green;
             margin: 10px;
         }
+
+        .bubble {
+            display: inline-block;
+            padding: 12px;
+            border-radius: 12px;
+            max-width: 60%;
+            line-height: 1.6;
+        }
+
+        .assistant .bubble ul {
+            padding-left: 20px;
+        }
+
+        .assistant .bubble p {
+            margin: 5px 0;
+        }
+
+        .user .bubble {
+            background: #19c37d;
+        }
+
+        .assistant .bubble {
+            background: #444654;
+        }
+
+        /* Input */
+        #input-area {
+            display: flex;
+            padding: 10px;
+            background: #40414f;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+        }
+
+        button {
+            margin-left: 5px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #19c37d;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #17a96b;
+        }
+
+        .code-block {
+    position: relative;
+    background: #1e1e1e;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+    overflow-x: auto;
+}
+
+.code-block pre {
+    margin: 0;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #19c37d;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.copy-btn:hover {
+    background: #17a96b;
+}
     </style>
 </head>
 
 <body>
 
-<!-- Sidebar -->
-<div id="sidebar">
-    <h3>💬 Chats</h3>
+<div class="app">
 
-    <a href="/new/">➕ New Chat</a>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <h3>💬 Chats</h3>
 
-    {% for convo in conversations %}
-        <a href="/?convo_id={{ convo.id }}">
-            Chat {{ convo.id }}
-        </a>
-    {% endfor %}
+        <a href="/dashboard/">📊 Dashboard</a>
+        <a href="{% url 'new_chat' %}">➕ New Chat</a>
 
-    <hr>
-    <a href="/accounts/logout/">Logout</a>
-</div>
-
-<!-- Chat Area -->
-<div id="chat-area">
-
-    <h2>🤖 AI Assistant</h2>
-
-    <div id="chat-box">
-        {% for msg in messages %}
-            {% if msg.role == "user" %}
-                <p class="user"><b>You:</b> {{ msg.content }}</p>
-            {% else %}
-                <p class="assistant"><b>AI:</b> {{ msg.content }}</p>
-            {% endif %}
+        {% for convo in conversations %}
+            <a href="/?convo_id={{ convo.id }}">
+                {{ convo.title }}
+            </a>
         {% endfor %}
+
+        <hr>
+        <a href="/accounts/logout/">Logout</a>
     </div>
 
-    <br>
+    <!-- Main -->
+    <div id="main">
 
-    <input type="text" id="message" placeholder="Type message..." style="width:80%;">
-    <button onclick="sendMessage()">Send</button>
+        <!-- Header -->
+        <div id="header">
+            <h2>🤖 AI Assistant</h2>
+        </div>
+
+        <!-- Chat -->
+        <div id="chat-box">
+            {% for msg in messages %}
+                <div class="{{ msg.role }}">
+                    <div class="bubble">
+                        {% if msg.role == "assistant" %}
+                            {{ msg.content|safe }}
+                        {% else %}
+                            {{ msg.content }}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Input -->
+        <div id="input-area">
+            <input type="text" id="message" placeholder="Ask something...">
+            <button onclick="sendMessage()">Send</button>
+            <button onclick="startListening()">🎤</button>
+            <button onclick="startWakeWord()">🧠</button>
+        </div>
+
+    </div>
 
 </div>
 
 <script>
+
 const convoId = "{{ conversation.id }}";
 
+// ✅ FORMAT RESPONSE (MARKDOWN)
+function formatResponse(text) {
+    let html = marked.parse(text);
+
+    // Wrap code blocks with copy button
+    const temp = document.createElement("div");
+    temp.innerHTML = html;
+
+    temp.querySelectorAll("pre code").forEach(block => {
+        let wrapper = document.createElement("div");
+        wrapper.className = "code-block";
+
+        let button = document.createElement("button");
+        button.innerText = "Copy";
+        button.className = "copy-btn";
+
+        button.onclick = () => {
+            navigator.clipboard.writeText(block.innerText);
+            button.innerText = "Copied!";
+            setTimeout(() => button.innerText = "Copy", 1500);
+        };
+
+        block.parentNode.replaceWith(wrapper);
+        wrapper.appendChild(button);
+        wrapper.appendChild(block);
+
+        hljs.highlightElement(block);
+    });
+
+    return temp.innerHTML;
+}
+// 🚀 SEND MESSAGE
 function sendMessage() {
     let input = document.getElementById("message");
     let msg = input.value;
@@ -106,8 +262,16 @@ function sendMessage() {
 
     let chatBox = document.getElementById("chat-box");
 
-    chatBox.innerHTML += `<p class="user"><b>You:</b> ${msg}</p>`;
+    // User message
+    chatBox.innerHTML += `
+        <div class="user">
+            <div class="bubble">${msg}</div>
+        </div>
+    `;
+
     input.value = "";
+
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     fetch(`/chat/${convoId}/`, {
         method: "POST",
@@ -119,19 +283,89 @@ function sendMessage() {
     })
     .then(res => res.json())
     .then(data => {
-        chatBox.innerHTML += `<p class="assistant"><b>AI:</b> ${data.response}</p>`;
+        chatBox.innerHTML += `
+            <div class="assistant">
+                <div class="bubble">${formatResponse(data.response)}</div>
+            </div>
+        `;
+
+        speakText(data.response);
+
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 }
 
+// 🎤 VOICE INPUT
+function startListening() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Use Chrome browser");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.onresult = function(event) {
+        let text = event.results[0][0].transcript;
+        document.getElementById("message").value = text;
+        sendMessage();
+    };
+
+    recognition.start();
+}
+
+// 🧠 WAKE WORD
+function startWakeWord() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+
+    recognition.onresult = function(event) {
+        let text = event.results[event.results.length - 1][0].transcript.toLowerCase();
+
+        if (text.includes("hey assistant")) {
+            recognition.stop();
+            speakText("Yes, how can I help?");
+            startListening();
+        }
+    };
+
+    recognition.start();
+}
+
+// 🔊 TEXT TO SPEECH
+function speakText(text) {
+    // 🔥 Clean markdown symbols
+    let cleanText = text
+        .replace(/\*\*/g, "")   // remove bold **
+        .replace(/\*/g, "")     // remove *
+        .replace(/```[\s\S]*?```/g, "code block") // replace code
+        .replace(/`/g, "")      // remove inline code
+        .replace(/\n/g, ". ");  // better pause
+
+    const speech = new SpeechSynthesisUtterance(cleanText);
+    speech.lang = "en-US";
+
+    window.speechSynthesis.speak(speech);
+}
+
+// 🔐 CSRF
 function getCSRFToken() {
     return document.cookie.split('; ')
         .find(row => row.startsWith('csrftoken'))
         .split('=')[1];
 }
+
+// ⌨️ ENTER KEY
+document.getElementById("message").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
+});
+
 </script>
 
 </body>
 </html>
-
-

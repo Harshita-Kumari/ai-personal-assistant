@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1f2f, #343541);
+            color: white;
+        }
+
+        /* Navbar */
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .nav a {
+            padding: 10px;
+            background: #19c37d;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            margin-right: 10px;
+            transition: 0.3s;
+        }
+
+        .nav a:hover {
+            transform: scale(1.1);
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.08);
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Recent chats */
+        .recent {
+            padding: 20px;
+        }
+
+        .chat-item {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+
+        .chat-item:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(5px);
+        }
+
+        a {
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="nav">
+    <div>
+        <a href="/">💬 Chat</a>
+        <a href="/dashboard/">📊 Dashboard</a>
+    </div>
+</div>
+
+<h1 style="padding: 20px;">📊 Dashboard</h1>
+
+<div class="cards">
+    <div class="card">💬 {{ total_conversations }} Conversations</div>
+    <div class="card">📨 {{ total_messages }} Messages</div>
+    <div class="card">🎂 {{ total_birthdays }} Birthdays</div>
+</div>
+
+<div class="recent">
+    <h2>Recent Chats</h2>
+
+    {% for chat in recent_chats %}
+        <div class="chat-item">
+            <a href="/?convo_id={{ chat.id }}">
+                {{ chat.title }}
+            </a>
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>

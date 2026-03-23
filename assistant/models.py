@@ -54,3 +54,19 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.role}: {self.content[:30]}"
+    
+class UserMemory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    key = models.CharField(max_length=100)
+    value = models.TextField()
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
+    
+class Birthday(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"{self.name} - {self.date}"
